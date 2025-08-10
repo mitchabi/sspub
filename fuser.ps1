@@ -85,4 +85,4 @@ if ($dupes) {
     }
 }
 
-$results | Sort-Object Suspicious -Descending, MonitorID | Format-Table -AutoSize
+$results | Sort-Object @{Expression='Suspicious';Descending=$true}, @{Expression='MonitorID';Descending=$false} | Format-Table -AutoSize
