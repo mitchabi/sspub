@@ -17,7 +17,7 @@ function DefenderInfo { if (Get-Command Get-MpComputerStatus -ErrorAction Silent
 function AvProducts { try{ Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntivirusProduct | Select-Object displayName,pathToSignedProductExe,productState } catch {"Unavailable"} }
 function DeviceType { $bat=(Get-CimInstance Win32_Battery); $enc=Get-CimInstance Win32_SystemEnclosure; $types=$enc.ChassisTypes; $islap=$false; if($bat){$islap=$true}; if($types){$islap=$islap -or ($types | Where-Object {$_ -in 8,9,10,11,12,14,18,21,30,31,32})}; if($islap){"Laptop"}else{"Desktop"} }
 function DecodeChars($arr){ if(-not $arr){return $null}; ($arr | Where-Object {$_ -ne 0} | ForEach-Object {[char]$_}) -join "" }
-function MonitorInfo { $mons=Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorID -ErrorAction SilentlyContinue; if(-not $mons){ return (Get-CimInstance Win32_DesktopMonitor | ForEach-Object {[pscustomobject]@{Manufacturer=$_.MonitorManufacturer;Name=$_.Name;Serial=$_.PNPDeviceID;Active=$true}}) }; $act=Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorBasicDisplayParams -ErrorAction SilentlyContinue; $activeEdids=@{}; if($act){$act|ForEach-Object{$activeEdids[$_.InstanceName]=$true}}; $mons | ForEach-Object { $m=DecodeChars $_.ManufacturerName; $n=DecodeChars $_.UserFriendlyName; $s=DecodeChars $_.SerialNumberID; $inst=$_.InstanceName; $isAct=$true; if($activeEdids.ContainsKey($inst)){$isAct=$true}; [pscustomobject]@{Manufacturer=$m;Name=$n;Serial=$s;Active=$isAct} }
+function MonitorInfo { $mons=Get-CimInstance -Namespace root\wmi -ClassName WmiMonitorID -ErrorAction SilentlyContinue; if(-not $mons){ return (Get-CimInstance Win32_DesktopMonitor | ForEach-Object {[pscustomobject]@{Manufacturer=$_.MonitorManufacturer;Name=$_.Name;Serial=$_.PNPDeviceID;Active=$true}}) }; $mons | ForEach-Object { $m=DecodeChars $_.ManufacturerName; $n=DecodeChars $_.UserFriendlyName; $s=DecodeChars $_.SerialNumberID; [pscustomobject]@{Manufacturer=$m;Name=$n;Serial=$s;Active=$true} } }
 function MonitorCount { (MonitorInfo | Measure-Object).Count }
 
 function Print-Header($t){ Write-Host ""; Write-Host "=== $t ===" }
@@ -89,8 +89,8 @@ function EventMenu {
         Write-Host "1 System Critical"
         Write-Host "2 System Errors"
         Write-Host "3 Application Errors/Critical"
-        Write-Host "4 Security Logons (4624/4625)"
-        Write-Host "5 Kernel-Power 41"
+        Write-Host "4 Security Log"
+        Write-Host "5 Kernel-Power"
         Write-Host "6 Boot/Shutdown"
         Write-Host "7 Service Control Manager Errors/Warnings"
         Write-Host "8 MSI Installer Events"
